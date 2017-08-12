@@ -41,7 +41,42 @@ int main(int argc, char *argv[])
 
     portno = atoi(argv[1]);
 
+    //server socket address struct
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr.s_addr = INADDR_ANY;
     serv_addr.sin_port = htons(portno);
+
+    //bind -> binds name to a socket sockfd is socket, serv_addr is address (this accepts pointer to it), and then address length
+    if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
+        error('Error on binding');
+    }
+
+    //make socket (sockfd) passive(accept incoming connections) and accept a limit of 5 connections
+    listen(sockfd, 5);
+
+    clilen = sizeof(cli_addr);
+
+    //accept a connection on a new socket
+    newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
+
+    if (newsockfd < 0) {
+        error('Error on connect');
+    }
+
+    bzero(buffer, 256);
+    //read 255 bytes from newsockfd into the buffer
+    n = read(newsockfd,buffer,255);
+
+    if (n < 0) {
+        error('Error reading into buffer');
+    }
+
+    printf("Here is the message: %s\n",buffer);
+    n = write(newsockfd,"I got your message",18);
+    if (n < 0) {
+        error("ERROR writing to socket");
+    }
+
+    return 0;
+
 }
